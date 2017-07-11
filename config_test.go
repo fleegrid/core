@@ -31,4 +31,8 @@ func TestParseConfig(t *testing.T) {
 	if c == nil || e != nil || c.Passwd != "what" || c.Cipher != "AEAD_CHACHA20_POLY1305" {
 		t.Errorf("should ok with specified cipher; config: %v; error: %v", c, e)
 	}
+	c, e = ParseConfigFromURL("ss://cHACHA20-POLY1305:what@hello")
+	if c == nil || e != nil || c.Passwd != "what" || c.Cipher != "AEAD_CHACHA20_POLY1305" {
+		t.Errorf("should ok without AEAD_ prefix; config: %v; error: %v", c, e)
+	}
 }

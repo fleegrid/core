@@ -10,11 +10,9 @@ var (
 	// SupportedCiphers array of supported AEAD ciphers, uppercased
 	SupportedCiphers = []string{
 		"AEAD_CHACHA20_POLY1305",
-	}
-	// CipherAliases aliases of AEAD ciphers, case-ignored
-	CipherAliases = map[string]string{
-		"CHACHA20-POLY1305":      "AEAD_CHACHA20_POLY1305",
-		"CHACHA20-IETF-POLY1305": "AEAD_CHACHA20_POLY1305",
+		"AEAD_AES_128_GCM",
+		"AEAD_AES_192_GCM",
+		"AEAD_AES_256_GCM",
 	}
 )
 
@@ -92,16 +90,20 @@ func ParseConfigFromURL(urlstr string) (*Config, error) {
 func ValidateCipher(cipher string) (string, bool) {
 	// to uppercase
 	d := strings.ToUpper(cipher)
+	// replace - with _
+	d = strings.Replace(d, "-", "_", -1)
 	// check supported ciphers
 	for _, s := range SupportedCiphers {
 		if s == d {
 			return d, true
 		}
 	}
-	// check aliases
-	a := CipherAliases[d]
-	if len(a) != 0 {
-		return a, true
+	// prepend "AEAD_" and try again
+	d = "AEAD_" + d
+	for _, s := range SupportedCiphers {
+		if s == d {
+			return d, true
+		}
 	}
 	return "", false
 }
