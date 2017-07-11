@@ -1,5 +1,7 @@
 # Exiles
 
+[![Build Status](https://travis-ci.org/yorha-army/exiles.svg?branch=master)](https://travis-ci.org/yorha-army/exiles)
+
 Another golang version of the software that must not be named
 
 ## Security
