@@ -7,16 +7,6 @@ import (
 )
 
 var (
-	// SupportedCiphers array of supported AEAD ciphers, uppercased
-	SupportedCiphers = []string{
-		"AEAD_CHACHA20_POLY1305",
-		"AEAD_AES_128_GCM",
-		"AEAD_AES_192_GCM",
-		"AEAD_AES_256_GCM",
-	}
-)
-
-var (
 	// ErrBadURL URL is mal-formatted
 	ErrBadURL = errors.New("bad ss:// url")
 	// ErrBadScheme URL scheme is not 'ss'

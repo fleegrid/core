@@ -11,10 +11,20 @@ import (
 	"strconv"
 )
 
-// ErrBadKeyLength error when key length is bad
-type ErrBadKeyLength int
+var (
+	// SupportedCiphers array of supported AEAD ciphers, uppercased
+	SupportedCiphers = []string{
+		"AEAD_CHACHA20_POLY1305",
+		"AEAD_AES_128_GCM",
+		"AEAD_AES_192_GCM",
+		"AEAD_AES_256_GCM",
+	}
+)
 
-func (e ErrBadKeyLength) Error() string {
+// BadKeyLengthError error when key length is bad
+type BadKeyLengthError int
+
+func (e BadKeyLengthError) Error() string {
 	return "Bad key length: " + strconv.Itoa(int(e))
 }
 
@@ -33,6 +43,24 @@ type Cipher interface {
 	TagSize() int
 	// create a AEAD with given salt
 	CreateAEAD(salt []byte) (cipher.AEAD, error)
+}
+
+// NewCipher create a new Cipher with name and password
+func NewCipher(name string, key []byte) (Cipher, error) {
+	switch name {
+	case "AEAD_CHACHA20_POLY1305":
+		return NewChapoCipher(key)
+	case "AEAD_AES_128_GCM":
+		return NewAESGCMCipher(key, 16)
+	case "AEAD_AES_192_GCM":
+		return NewAESGCMCipher(key, 24)
+	case "AEAD_AES_256_GCM":
+		return NewAESGCMCipher(key, 32)
+	default:
+		// not possible
+		log.Fatal("Cipher " + name + " is not supported")
+		return nil, nil
+	}
 }
 
 // ExpandPassword expand password with HKDF_SHA1
@@ -91,7 +119,7 @@ type AESGCMCipher struct {
 // NewAESGCMCipher create a new AES_XXX_GCM cipher
 // one of 16, 24, or 32 to select AES-128/196/256-GCM.
 func NewAESGCMCipher(key []byte, size int) (*AESGCMCipher, error) {
-	return &AESGCMCipher{key: key[:size], size: size}, nil
+	return &AESGCMCipher{key: key, size: size}, nil
 }
 
 // KeySize for AES-GCM
