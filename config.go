@@ -11,8 +11,8 @@ var (
 	ErrBadURL = errors.New("bad ss:// url")
 	// ErrBadScheme URL scheme is not 'ss'
 	ErrBadScheme = errors.New("scheme is not 'ss' in ss:// url")
-	// ErrBadCipher Cipher is not in SupportedCiphers
-	ErrBadCipher = errors.New("cipher is not supported in ss:// url, only " + strings.Join(SupportedCiphers, ",") + " are supported")
+	// ErrBadCipher Cipher is not in SupportedCipherNames
+	ErrBadCipher = errors.New("cipher is not supported in ss:// url, only " + strings.Join(SupportedCipherNames, ",") + " are supported")
 	// ErrMissingPasswd password is missing from url
 	ErrMissingPasswd = errors.New("password is not specified in ss:// url")
 	// ErrMissingAddress host:port is missing from url
@@ -56,7 +56,7 @@ func ParseConfigFromURL(urlstr string) (*Config, error) {
 		config.Passwd = passwd
 	} else {
 		// if no ciper, use default
-		config.Cipher = SupportedCiphers[0]
+		config.Cipher = SupportedCipherNames[0]
 		config.Passwd = u.User.Username()
 	}
 	// check is cipher supported
@@ -83,14 +83,14 @@ func ValidateCipher(cipher string) (string, bool) {
 	// replace - with _
 	d = strings.Replace(d, "-", "_", -1)
 	// check supported ciphers
-	for _, s := range SupportedCiphers {
+	for _, s := range SupportedCipherNames {
 		if s == d {
 			return d, true
 		}
 	}
 	// prepend "AEAD_" and try again
 	d = "AEAD_" + d
-	for _, s := range SupportedCiphers {
+	for _, s := range SupportedCipherNames {
 		if s == d {
 			return d, true
 		}

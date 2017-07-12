@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewCipher(t *testing.T) {
-	c, err := NewCipher("AEAD_CHACHA20_POLY1305", []byte("hello"))
+	c, err := NewCipher("AEAD_CHACHA20_POLY1305", "hello")
 	if err != nil {
 		t.Fatal("Failed to create cipher; error: %v", err)
 	}
@@ -15,7 +15,7 @@ func TestNewCipher(t *testing.T) {
 	if !ok {
 		t.Fatal("Should create a ChapoCipher")
 	}
-	c, err = NewCipher("AEAD_AES_128_GCM", []byte("hello"))
+	c, err = NewCipher("AEAD_AES_128_GCM", "hello")
 	if err != nil {
 		t.Fatal("Failed to create cipher; error: %v", err)
 	}
@@ -29,13 +29,13 @@ func TestNewCipher(t *testing.T) {
 }
 
 func TestAllCiphers(t *testing.T) {
-	for _, name := range SupportedCiphers {
+	for _, name := range SupportedCipherNames {
 		testCipherEncryptDecrypt(name, t)
 	}
 }
 
 func testCipherEncryptDecrypt(name string, t *testing.T) {
-	c, err := NewCipher(name, []byte("hello"))
+	c, err := NewCipher(name, "hello")
 	if err != nil {
 		t.Fatalf("%v: Failed to create cipher; error: %v", name, err)
 	}

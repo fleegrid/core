@@ -3,6 +3,7 @@ package exiles
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/sha1"
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/crypto/hkdf"
@@ -11,13 +12,38 @@ import (
 	"strconv"
 )
 
+// CipherDescriptor describes ciphers
+type CipherDescriptor struct {
+	KeySize       int
+	CipherFactory func([]byte, int) (Cipher, error)
+}
+
 var (
-	// SupportedCiphers array of supported AEAD ciphers, uppercased
-	SupportedCiphers = []string{
+	// SupportedCipherNames names of supported ciphers
+	SupportedCipherNames = []string{
 		"AEAD_CHACHA20_POLY1305",
 		"AEAD_AES_128_GCM",
 		"AEAD_AES_192_GCM",
 		"AEAD_AES_256_GCM",
+	}
+	// SupportedCiphers array of supported ciphers
+	SupportedCiphers = map[string]*CipherDescriptor{
+		"AEAD_CHACHA20_POLY1305": {
+			KeySize:       32,
+			CipherFactory: NewChapoCipher,
+		},
+		"AEAD_AES_128_GCM": {
+			KeySize:       16,
+			CipherFactory: NewAESGCMCipher,
+		},
+		"AEAD_AES_192_GCM": {
+			KeySize:       24,
+			CipherFactory: NewAESGCMCipher,
+		},
+		"AEAD_AES_256_GCM": {
+			KeySize:       32,
+			CipherFactory: NewAESGCMCipher,
+		},
 	}
 )
 
@@ -46,26 +72,33 @@ type Cipher interface {
 }
 
 // NewCipher create a new Cipher with name and password
-func NewCipher(name string, key []byte) (Cipher, error) {
-	switch name {
-	case "AEAD_CHACHA20_POLY1305":
-		return NewChapoCipher(key)
-	case "AEAD_AES_128_GCM":
-		return NewAESGCMCipher(key, 16)
-	case "AEAD_AES_192_GCM":
-		return NewAESGCMCipher(key, 24)
-	case "AEAD_AES_256_GCM":
-		return NewAESGCMCipher(key, 32)
-	default:
-		// not possible
+func NewCipher(name, password string) (Cipher, error) {
+	desc := SupportedCiphers[name]
+	if desc == nil {
+		// not possible, config.go should handled it
 		log.Fatal("Cipher " + name + " is not supported")
-		return nil, nil
 	}
+	key := DeriveMasterKey(password, desc.KeySize)
+	return desc.CipherFactory(key, desc.KeySize)
 }
 
-// ExpandPassword expand password with HKDF_SHA1
-func ExpandPassword(in, salt, out []byte) {
-	r := hkdf.New(sha1.New, in, salt, HKDFInfo)
+// DeriveMasterKey derive master key from password string
+func DeriveMasterKey(password string, keyLen int) []byte {
+	var b, prev []byte
+	h := md5.New()
+	for len(b) < keyLen {
+		h.Write(prev)
+		h.Write([]byte(password))
+		b = h.Sum(b)
+		prev = b[len(b)-h.Size():]
+		h.Reset()
+	}
+	return b[:keyLen]
+}
+
+// DeriveSubkey expand password with HKDF_SHA1
+func DeriveSubkey(master, salt, out []byte) {
+	r := hkdf.New(sha1.New, master, salt, HKDFInfo)
 	_, err := io.ReadFull(r, out)
 	if err != nil {
 		// should never happened
@@ -79,7 +112,10 @@ type ChapoCipher struct {
 }
 
 // NewChapoCipher create a new ChapoCipher base on a key string
-func NewChapoCipher(key []byte) (*ChapoCipher, error) {
+func NewChapoCipher(key []byte, size int) (Cipher, error) {
+	if size != chacha20poly1305.KeySize {
+		log.Fatalf("keySize of chacha20-poly1305 should be fixed %v\n", chacha20poly1305.KeySize)
+	}
 	return &ChapoCipher{key: key}, nil
 }
 
@@ -106,7 +142,7 @@ func (c *ChapoCipher) TagSize() int {
 // CreateAEAD for ChaCha20-Poly1305
 func (c *ChapoCipher) CreateAEAD(salt []byte) (cipher.AEAD, error) {
 	subkey := make([]byte, c.KeySize())
-	ExpandPassword(c.key, salt, subkey)
+	DeriveSubkey(c.key, salt, subkey)
 	return chacha20poly1305.New(subkey)
 }
 
@@ -118,7 +154,7 @@ type AESGCMCipher struct {
 
 // NewAESGCMCipher create a new AES_XXX_GCM cipher
 // one of 16, 24, or 32 to select AES-128/196/256-GCM.
-func NewAESGCMCipher(key []byte, size int) (*AESGCMCipher, error) {
+func NewAESGCMCipher(key []byte, size int) (Cipher, error) {
 	return &AESGCMCipher{key: key, size: size}, nil
 }
 
@@ -145,7 +181,7 @@ func (c *AESGCMCipher) TagSize() int {
 // CreateAEAD for AESGCM
 func (c *AESGCMCipher) CreateAEAD(salt []byte) (cipher.AEAD, error) {
 	subkey := make([]byte, c.KeySize())
-	ExpandPassword(c.key, salt, subkey)
+	DeriveSubkey(c.key, salt, subkey)
 	blk, err := aes.NewCipher(subkey)
 	if err != nil {
 		return nil, err

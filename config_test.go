@@ -20,7 +20,7 @@ func TestParseConfig(t *testing.T) {
 	}
 	// should ok
 	c, e = ParseConfigFromURL("ss://what@hello")
-	if c == nil || e != nil || c.Passwd != "what" || c.Cipher != SupportedCiphers[0] {
+	if c == nil || e != nil || c.Passwd != "what" || c.Cipher != SupportedCipherNames[0] {
 		t.Errorf("should ok with default cipher; config: %v; error: %v", c, e)
 	}
 	c, e = ParseConfigFromURL("ss://chacha20-polY1305:what@hello")
