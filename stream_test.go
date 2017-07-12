@@ -6,14 +6,13 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net"
-	"os"
 	"testing"
 )
 
-const socketAddr = "/tmp/exiles-test-stream-conn-001.sock"
+const streamAddr = ":12301"
 
-func randomString() string {
-	bytes := make([]byte, PayloadMaxSize/2+rand.Intn(PayloadMaxSize/2))
+func randomPayloadString() string {
+	bytes := make([]byte, PayloadMaxSize/2+rand.Intn(PayloadMaxSize))
 	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }
@@ -27,8 +26,7 @@ func TestStreamConn(t *testing.T) {
 	}
 
 	// create a server with unix domain socket
-	os.Remove(socketAddr)
-	l, err := net.Listen("unix", socketAddr)
+	l, err := net.Listen("tcp", streamAddr)
 	if err != nil {
 		t.Fatalf("Cannot listen socket")
 	}
@@ -53,8 +51,8 @@ func TestStreamConn(t *testing.T) {
 	}()
 
 	// client side
-	for i := 0; i < 10; i++ {
-		conn, err := net.Dial("unix", socketAddr)
+	for i := 0; i < 1000; i++ {
+		conn, err := net.Dial("tcp", "127.0.0.1"+streamAddr)
 		if err != nil {
 			t.Fatal("Cannot dial socket")
 		}
@@ -63,7 +61,7 @@ func TestStreamConn(t *testing.T) {
 
 		<-sconnReady
 
-		str := randomString()
+		str := randomPayloadString()
 
 		go func() {
 			cconn.ReadFrom(bytes.NewBufferString(str))
