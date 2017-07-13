@@ -38,21 +38,28 @@ func (w *StreamWriter) Write(b []byte) (int, error) {
 // ReadFrom encrypt and write bytes from a io.Reader
 func (w *StreamWriter) ReadFrom(r io.Reader) (n int64, err error) {
 	for {
+		// initial buf and puf (payload buf)
 		buf := w.buf
-		pBuf := buf[2+w.Overhead() : 2+w.Overhead()+PayloadMaxSize]
-		nr, er := r.Read(pBuf)
+		puf := buf[2+w.Overhead():]
+		// read to puf
+		nr, er := r.Read(puf[:PayloadMaxSize])
 
 		if nr > 0 {
+			// add total size
 			n += int64(nr)
+			// limit buf to proper size
 			buf = buf[:2+w.Overhead()+nr+w.Overhead()]
-			pBuf = pBuf[:nr]
+			// limit puf to proper size
+			puf = buf[2+w.Overhead():]
+			// set payload length
 			buf[0], buf[1] = byte(nr>>8), byte(nr) // Big-endian payload size
+			// encrypt the payload length
 			w.Seal(buf[:0], w.nonce, buf[:2], nil)
 			increaseNonce(w.nonce)
-
-			w.Seal(pBuf[:0], w.nonce, pBuf, nil)
+			// encrypt the payload
+			w.Seal(puf[:0], w.nonce, puf[:nr], nil)
 			increaseNonce(w.nonce)
-
+			// send
 			_, ew := w.Writer.Write(buf)
 			if ew != nil {
 				err = ew

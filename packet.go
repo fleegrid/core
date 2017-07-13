@@ -17,8 +17,8 @@ var ErrPacketTooShort = errors.New("short packet")
 // all zero nonce for packet protocol
 var _zeroNonce [128]byte
 
-// Pack encrypts packet
-func Pack(dst, plain []byte, ciph Cipher) ([]byte, error) {
+// SealPacket encrypts packet
+func SealPacket(dst, plain []byte, ciph Cipher) ([]byte, error) {
 	saltSize := ciph.SaltSize()
 	salt := dst[:saltSize]
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
@@ -37,8 +37,8 @@ func Pack(dst, plain []byte, ciph Cipher) ([]byte, error) {
 	return dst[:saltSize+len(b)], nil
 }
 
-// Unpack decrypt packet
-func Unpack(dst, src []byte, ciph Cipher) ([]byte, error) {
+// OpenPacket decrypt packet
+func OpenPacket(dst, src []byte, ciph Cipher) ([]byte, error) {
 	saltSize := ciph.SaltSize()
 	if len(src) < saltSize {
 		return nil, ErrPacketTooShort
@@ -75,7 +75,7 @@ func NewPacketConn(conn net.PacketConn, c Cipher) (*PacketConn, error) {
 func (c *PacketConn) WriteTo(b []byte, addr net.Addr) (int, error) {
 	c.Lock()
 	defer c.Unlock()
-	buf, err := Pack(c.buf, b, c)
+	buf, err := SealPacket(c.buf, b, c)
 	if err != nil {
 		return 0, err
 	}
@@ -89,6 +89,6 @@ func (c *PacketConn) ReadFrom(b []byte) (int, net.Addr, error) {
 	if err != nil {
 		return n, addr, err
 	}
-	b, err = Unpack(b, b[:n], c)
+	b, err = OpenPacket(b, b[:n], c)
 	return len(b), addr, err
 }
