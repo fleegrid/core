@@ -60,7 +60,7 @@ func ParseConfigFromURL(urlstr string) (*Config, error) {
 		config.Passwd = u.User.Username()
 	}
 	// check is cipher supported
-	config.Cipher, ok = ValidateCipher(config.Cipher)
+	config.Cipher, ok = ResolveCipherName(config.Cipher)
 	if !ok {
 		return nil, ErrBadCipher
 	}
@@ -76,8 +76,8 @@ func ParseConfigFromURL(urlstr string) (*Config, error) {
 	return &config, nil
 }
 
-// ValidateCipher resolve cipher alises and check if cipher is supported
-func ValidateCipher(cipher string) (string, bool) {
+// ResolveCipherName resolve cipher alises and check if cipher is supported
+func ResolveCipherName(cipher string) (string, bool) {
 	// to uppercase
 	d := strings.ToUpper(cipher)
 	// replace - with _
