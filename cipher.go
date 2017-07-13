@@ -65,8 +65,6 @@ type Cipher interface {
 	SaltSize() int
 	// size of nonce
 	NonceSize() int
-	// tag size
-	TagSize() int
 	// create a AEAD with given salt
 	CreateAEAD(salt []byte) (cipher.AEAD, error)
 }
@@ -134,11 +132,6 @@ func (c *ChapoCipher) NonceSize() int {
 	return chacha20poly1305.NonceSize
 }
 
-// TagSize for ChaCha20-Poly1305
-func (c *ChapoCipher) TagSize() int {
-	return 16
-}
-
 // CreateAEAD for ChaCha20-Poly1305
 func (c *ChapoCipher) CreateAEAD(salt []byte) (cipher.AEAD, error) {
 	subkey := make([]byte, c.KeySize())
@@ -171,11 +164,6 @@ func (c *AESGCMCipher) SaltSize() int {
 // NonceSize for AES-GCM
 func (c *AESGCMCipher) NonceSize() int {
 	return 12
-}
-
-// TagSize for AES-GCM
-func (c *AESGCMCipher) TagSize() int {
-	return 16
 }
 
 // CreateAEAD for AESGCM
