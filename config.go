@@ -8,15 +8,15 @@ import (
 
 var (
 	// ErrBadURL URL is mal-formatted
-	ErrBadURL = errors.New("bad ss:// url")
-	// ErrBadScheme URL scheme is not 'ss'
-	ErrBadScheme = errors.New("scheme is not 'ss' in ss:// url")
+	ErrBadURL = errors.New("bad flee:// url")
+	// ErrBadScheme URL scheme is not 'flee'
+	ErrBadScheme = errors.New("scheme is not 'flee' in flee:// url")
 	// ErrBadCipher Cipher is not in SupportedCipherNames
-	ErrBadCipher = errors.New("cipher is not supported in ss:// url, only " + strings.Join(SupportedCipherNames, ",") + " are supported")
+	ErrBadCipher = errors.New("cipher is not supported in flee:// url, only " + strings.Join(SupportedCipherNames, ",") + " are supported")
 	// ErrMissingPasswd password is missing from url
-	ErrMissingPasswd = errors.New("password is not specified in ss:// url")
+	ErrMissingPasswd = errors.New("password is not specified in flee:// url")
 	// ErrMissingAddress host:port is missing from url
-	ErrMissingAddress = errors.New("host:port is not specified in ss:// url")
+	ErrMissingAddress = errors.New("host:port is not specified in flee:// url")
 )
 
 // Config represents a basic configuration with address, cipher and password
@@ -32,7 +32,7 @@ type Config struct {
 
 // ParseConfigFromURL decode url string to Config
 // Format:
-//	ss://CIPHER:PASSWORD@ADDRESS:PORT
+//	flee://CIPHER:PASSWORD@ADDRESS:PORT
 func ParseConfigFromURL(urlstr string) (*Config, error) {
 	config := Config{}
 	u, err := url.Parse(urlstr)
@@ -41,7 +41,7 @@ func ParseConfigFromURL(urlstr string) (*Config, error) {
 		return nil, ErrBadURL
 	}
 	// check scheme
-	if u.Scheme != "ss" {
+	if u.Scheme != "flee" {
 		return nil, ErrBadScheme
 	}
 	// check CIPHER:PASSWORD
