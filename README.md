@@ -1,8 +1,8 @@
-# Exiles
+# fgcore
 
-[![Build Status](https://travis-ci.org/yorha-army/exiles.svg?branch=master)](https://travis-ci.org/yorha-army/exiles)
+[![Build Status](https://travis-ci.org/fleegrid/fgcore.svg?branch=master)](https://travis-ci.org/fleegrid/fgcore)
 
-Another golang version of the software that must not be named
+Core library of FleeGrid, basically a fork of the software that must not be named.
 
 ## Security
 

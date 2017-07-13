@@ -1,4 +1,4 @@
-package exiles
+package fgcore
 
 import (
 	"testing"
