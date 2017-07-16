@@ -1,4 +1,4 @@
-package fgcore
+package core
 
 import (
 	"testing"

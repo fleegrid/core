@@ -1,8 +1,8 @@
-# fgcore
+# core
 
-[![Build Status](https://travis-ci.org/fleegrid/fgcore.svg?branch=master)](https://travis-ci.org/fleegrid/fgcore)
+[![Build Status](https://travis-ci.org/fleegrid/core.svg?branch=master)](https://travis-ci.org/fleegrid/core)
 
-Core library of FleeGrid
+FleeGrid core library, provides PSK-AEAD encrypted connections.
 
 ## Security
 
