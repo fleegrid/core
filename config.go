@@ -6,17 +6,20 @@ import (
 	"strings"
 )
 
+// FleeScheme URL scheme for FleeGrid
+var FleeScheme = "flee"
+
 var (
 	// ErrBadURL URL is mal-formatted
-	ErrBadURL = errors.New("bad flee:// url")
+	ErrBadURL = errors.New("bad url")
 	// ErrBadScheme URL scheme is not 'flee'
-	ErrBadScheme = errors.New("scheme is not 'flee' in flee:// url")
+	ErrBadScheme = errors.New("url scheme is not '" + FleeScheme + "'")
 	// ErrBadCipher Cipher is not in SupportedCipherNames
-	ErrBadCipher = errors.New("cipher is not supported in flee:// url, only " + strings.Join(SupportedCipherNames, ",") + " are supported")
+	ErrBadCipher = errors.New("cipher is not supported, only " + strings.Join(SupportedCipherNames, ",") + " are supported")
 	// ErrMissingPasswd password is missing from url
-	ErrMissingPasswd = errors.New("password is not specified in flee:// url")
+	ErrMissingPasswd = errors.New("password is not specified in url")
 	// ErrMissingAddress host:port is missing from url
-	ErrMissingAddress = errors.New("host:port is not specified in flee:// url")
+	ErrMissingAddress = errors.New("host:port is not specified in url")
 )
 
 // Config represents a basic configuration with address, cipher and password
@@ -41,7 +44,7 @@ func ParseConfigFromURL(urlstr string) (*Config, error) {
 		return nil, ErrBadURL
 	}
 	// check scheme
-	if u.Scheme != "flee" {
+	if u.Scheme != FleeScheme {
 		return nil, ErrBadScheme
 	}
 	// check CIPHER:PASSWORD
