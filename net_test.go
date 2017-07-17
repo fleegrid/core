@@ -6,36 +6,18 @@ import (
 )
 
 func TestIPAssign(t *testing.T) {
-	_, ipnet, err := net.ParseCIDR("192.168.0.1/24")
+	n, err := NewNetFromCIDR("192.168.0.1/24")
 	if err != nil {
-		t.Errorf("cannot create a standard net")
+		t.Errorf("Cannot create Net from CIDR: %v", err)
 	}
-	n := NewNet(ipnet)
+
 	var ip net.IP
 
 	ip, err = n.Take()
 	if err != nil {
 		t.Errorf("cannot take a ip")
 	}
-	if !ip.Equal(net.ParseIP("192.168.0.1")) {
-		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
-	}
-
-	ip, err = n.Take()
-	if err != nil {
-		t.Errorf("cannot take a ip")
-	}
 	if !ip.Equal(net.ParseIP("192.168.0.2")) {
-		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
-	}
-
-	n.Remove(net.ParseIP("192.168.0.1"))
-
-	ip, err = n.Take()
-	if err != nil {
-		t.Errorf("cannot take a ip")
-	}
-	if !ip.Equal(net.ParseIP("192.168.0.1")) {
 		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
 	}
 
@@ -47,13 +29,31 @@ func TestIPAssign(t *testing.T) {
 		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
 	}
 
-	n.Mark(net.ParseIP("192.168.0.4"))
+	n.Remove(net.ParseIP("192.168.0.2"))
 
 	ip, err = n.Take()
 	if err != nil {
 		t.Errorf("cannot take a ip")
 	}
-	if !ip.Equal(net.ParseIP("192.168.0.5")) {
+	if !ip.Equal(net.ParseIP("192.168.0.2")) {
+		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
+	}
+
+	ip, err = n.Take()
+	if err != nil {
+		t.Errorf("cannot take a ip")
+	}
+	if !ip.Equal(net.ParseIP("192.168.0.4")) {
+		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
+	}
+
+	n.Mark(net.ParseIP("192.168.0.5"))
+
+	ip, err = n.Take()
+	if err != nil {
+		t.Errorf("cannot take a ip")
+	}
+	if !ip.Equal(net.ParseIP("192.168.0.6")) {
 		t.Errorf("bad ip:%v:%v", n.IP.String(), ip.String())
 	}
 

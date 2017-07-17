@@ -13,12 +13,28 @@ var (
 // Net a simple Net that manages a subnet and automatically maps IPs
 type Net struct {
 	*net.IPNet
-	usedIPs map[string]bool
+	GatewayIP net.IP
+	usedIPs   map[string]bool
 }
 
 // NewNet creates a new Net instance, with given size
-func NewNet(net *net.IPNet) *Net {
-	return &Net{IPNet: net, usedIPs: make(map[string]bool)}
+func NewNet(gip net.IP, ipnet *net.IPNet) *Net {
+	return &Net{
+		IPNet:     ipnet,
+		GatewayIP: gip,
+		usedIPs: map[string]bool{
+			gip.String(): true,
+		},
+	}
+}
+
+// NewNetFromCIDR creates a new Net instance from CIDR string
+func NewNetFromCIDR(cidr string) (*Net, error) {
+	gip, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
+	return NewNet(gip, ipnet), nil
 }
 
 // Mark make a ip as already taken
