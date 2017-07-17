@@ -8,6 +8,8 @@ import (
 var (
 	// ErrOutOfIPs Net has ran out of IPs
 	ErrOutOfIPs = errors.New("out of IPs")
+	// ErrBadGatewayIP GatewayIP is not in CIDR
+	ErrBadGatewayIP = errors.New("bad gateway IP")
 )
 
 // Net a simple Net that manages a subnet and automatically maps IPs
@@ -18,14 +20,17 @@ type Net struct {
 }
 
 // NewNet creates a new Net instance, with given size
-func NewNet(gip net.IP, ipnet *net.IPNet) *Net {
+func NewNet(gip net.IP, ipnet *net.IPNet) (*Net, error) {
+	if !ipnet.Contains(gip) {
+		return nil, ErrBadGatewayIP
+	}
 	return &Net{
 		IPNet:     ipnet,
 		GatewayIP: gip,
 		usedIPs: map[string]bool{
 			gip.String(): true,
 		},
-	}
+	}, nil
 }
 
 // NewNetFromCIDR creates a new Net instance from CIDR string
@@ -34,7 +39,7 @@ func NewNetFromCIDR(cidr string) (*Net, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewNet(gip, ipnet), nil
+	return NewNet(gip, ipnet)
 }
 
 // Mark make a ip as already taken
