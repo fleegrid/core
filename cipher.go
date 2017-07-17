@@ -25,6 +25,7 @@ var (
 		"AEAD_AES_128_GCM",
 		"AEAD_AES_192_GCM",
 		"AEAD_AES_256_GCM",
+		"AEAD_DUMMY",
 	}
 	// SupportedCiphers array of supported ciphers
 	SupportedCiphers = map[string]*CipherDescriptor{
@@ -43,6 +44,10 @@ var (
 		"AEAD_AES_256_GCM": {
 			KeySize:       32,
 			CipherFactory: NewAESGCMCipher,
+		},
+		"AEAD_DUMMY": {
+			KeySize:       32,
+			CipherFactory: NewDummyCipher,
 		},
 	}
 )
